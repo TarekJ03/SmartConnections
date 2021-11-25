@@ -1,0 +1,8 @@
+/dist
+/index.html
+/node_modules
+/package-lock.json
+/package.json
+/src
+/state.json
+/tsconfig.json
