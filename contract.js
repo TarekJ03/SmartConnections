@@ -1,5 +1,3 @@
-class ContractError extends Error{}
-
 function handle(state, action){
 
     // Initialize all variables
@@ -85,10 +83,3 @@ function handle(state, action){
         throw new ContractError("There needs to be a passed func")
     }
 }
-
-test = handle({}, {"caller": "abc", "input":{ "function": "connect", "target": "def", "namespace": "youtube", "connectionType": "follow"}})
-test = handle(test, {"caller": "abc", "input":{ "function": "connect", "target": "def", "namespace": "twitter", "connectionType": "follow"}})
-test = handle(test, {"caller": "abc", "input": { "function": "connect", "target": "def", "namespace": "twitter", "connectionType": "follow", "alias": "twit"}})
-// test = handle(test, {"caller": "abc", "input": { "function": "disconnect", "target": "def", "namespace": "youtube"}})
-console.log(test)
-console.log(handle(test, {"input": { "function": "lookup", "target": "abc"}}))
