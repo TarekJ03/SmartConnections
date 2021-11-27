@@ -1,0 +1,14 @@
+{
+  "dependencies": {
+    "arlocal": "^1.1.13",
+    "arweave": "^1.10.18",
+    "fs": "^0.0.1-security",
+    "node-fetch": "^2.6.6",
+    "smartweave": "^0.4.46",
+    "testweave-sdk": "^0.2.2",
+    "typescript": "^4.5.2"
+  },
+  "devDependencies": {
+    "arconnect": "^0.2.9"
+  }
+}
