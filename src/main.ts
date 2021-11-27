@@ -1,8 +1,7 @@
 import Arweave = require('arweave');
 import Arlocal from "arlocal"
-import {createContract, readContract, interactRead, interactWrite} from "smartweave"
+import {createContract, interactRead, interactWrite} from "smartweave"
 import fetch = require("node-fetch")
-import { JWKInterface, JWKPublicInterface } from 'arweave/node/lib/wallet';
 import * as fs from "fs"
 
 async function main() {
@@ -20,52 +19,57 @@ async function main() {
   // Generating a wallet and putting some Winston into it
   const wallet = await arweave.wallets.generate();
   const address = await arweave.wallets.getAddress(wallet)
-  await mint(address, 999999999999999)
+  await mint(address, 9999999999999)
   // Generating a second wallet and putting some Winston into it
   const otherWallet = await arweave.wallets.generate()
   const otherAddress = await arweave.wallets.getAddress(otherWallet)
-  await mint(otherAddress, 999999999999999)
+  await mint(otherAddress, 9999999999999)
+  // Sending a transaction so that the second wallet has a last transaction
+  let transaction = await arweave.createTransaction({target: address, quantity: "100000"}, otherWallet)
+  await arweave.transactions.sign(transaction, wallet)
+  await arweave.transactions.post(transaction)
   // Generating a third wallet and putting some Winston into it
   const thirdWallet = await arweave.wallets.generate()
   const thirdAddress = await arweave.wallets.getAddress(thirdWallet)
-  await mint(thirdAddress, 999999999999999)
   // Mining the block in order to save the changes on the chain
   await mine()
-  // Creating the SmartWeave contract
-  const contract = await createMyContract(arweave, wallet);
-  // Interacting with the contract in different ways
-  await consumeContract(arweave, otherWallet, contract, address)
-  await consumeContract(arweave, thirdWallet, contract, address)
-  await consumeContract(arweave, thirdWallet, contract, otherAddress)
+  // Converting the contract to a string
+  const contractSource = fs.readFileSync("dist/contract.js", "utf-8")
+  // The initial state only contains the namespace OpenSea and the connectionTypes follow and superfollow
+  const initialState = {
+    namespaces: ["OpenSea"],
+    connectionTypes: ["follow", "superfollow"],
+    connections: {}
+  }
+  // Create the contract
+  const contract = await createContract(arweave, wallet, contractSource, JSON.stringify(initialState))
+  // This interaction will go through
+  await interactWrite(arweave, wallet, contract, {
+    "function": "connect",
+    "target": otherAddress,
+    "namespace": "OpenSea",
+    "connectionType": "follow",
+  })
+  // This interaction will go through because it's a different connection type
+  await interactWrite(arweave, wallet, contract, {
+    "function": "connect",
+    "target": otherAddress,
+    "namespace": "OpenSea",
+    "connectionType": "superfollow",
+  })
+  // This interaction will fail because the third wallet has not had any transactions
+  await interactWrite(arweave, otherWallet, contract, {
+    "function": "connect",
+    "target": thirdAddress,
+    "namespace": "OpenSea",
+    "connectionType": "follow",
+  })
   // Mining the block in order to save the changes on the chain
   await mine()
-  // Print the output of reading the state
-  console.log(await readContract(arweave, contract))
-  // Print the output of interactively reading ("lookup") the state
+  // Print the output of interactively reading ("lookup") the state, returns all connections keyed their owners
   console.log(await interactRead(arweave, wallet, contract, {"function": "lookup"}))
   await arlocal.stop()
 }
-
-async function consumeContract(arweave: Arweave, wallet: JWKPublicInterface, contract: string, otherWallet?: string) {
-  // Generate a new address
-  if (!otherWallet) {
-    otherWallet = await arweave.wallets.getAddress(await arweave.wallets.generate())
-  }
-  // Writing the changes to the chain
-  return await interactWrite(arweave, wallet, contract, {
-    "function": "connect",
-    "target": otherWallet,
-    "namespace": "OpenSea",
-    "connectionType": "follow",
-    })
-  }
-
-async function createMyContract(arweave: Arweave, wallet: JWKInterface) {
-    // Converting the contract to a string
-    const contractSource = fs.readFileSync("dist/contract.js", "utf-8")
-    // Creating the on-chain contract and returning the TxId
-    return await createContract(arweave, wallet, contractSource, JSON.stringify({}));
-  }
   
 async function mint(address:string, amount: Number) {
   // Minting a given amount of Winston to the given address
