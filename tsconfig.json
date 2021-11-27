@@ -1,5 +1,6 @@
 {
     "compilerOptions": {
+      "removeComments": true,
       "allowJs": true,
       "sourceMap": true,
       "esModuleInterop": true,
@@ -7,6 +8,7 @@
       "module": "commonjs",
       "target": "es2015",
       "declaration": true,
+      "strictNullChecks": true,
       "outDir": "dist/",
     },
     "include": ["src/*"]
