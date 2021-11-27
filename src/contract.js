@@ -38,7 +38,7 @@ async function handle(state, action){
                         }
                     }
                 } else {
-                    state[caller.toString()] = {
+                    state[caller] = {
                         [target]: {
                             [namespace]: {
                                 "connectionType": connectionType,
