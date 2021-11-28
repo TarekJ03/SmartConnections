@@ -146,9 +146,13 @@ async function handle(state: State, action: Action) {
         })
     }
 
+    function isValidEthAdress(target: string): boolean {
+        return target.slice(0, 2) == "0x" && target.length == 42
+    }
+
     async function isValidTarget(target: string): Promise<boolean>{
         /* @ts-ignore */ 
-        return Object.keys(state.connections).includes(target) || await SmartWeave.arweave.wallets.getLastTransactionID(target)
+        return Object.keys(state.connections).includes(target) || await SmartWeave.arweave.wallets.getLastTransactionID(target) || isValidEthAdress(target)
     }
 
     // Check if the passed action is a valid input
