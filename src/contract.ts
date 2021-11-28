@@ -177,7 +177,8 @@ async function handle(state: State, action: Action) {
                             if (state.connections[caller][target][namespace][connectionType]){
                                 if (alias != state.connections[caller][target][namespace][connectionType]["alias"]){
                                     state.connections[caller][target][namespace][connectionType] = { 
-                                        "createdAt": Date.now(),
+                                        /* @ts-ignore */
+                                        "createdAt": SmartWeave.block.timestamp,
                                         "alias": alias
                                         }
                                 } else {
@@ -187,14 +188,16 @@ async function handle(state: State, action: Action) {
                                     }
                             } else {
                                 state.connections[caller][target][namespace][connectionType] = { 
-                                    "createdAt": Date.now(),
+                                    /* @ts-ignore */
+                                    "createdAt": SmartWeave.block.timestamp,
                                     "alias": alias
                                     }
                                 }
                         } else {
                             state.connections[caller][target][namespace] = {
                                 [connectionType]: { 
-                                    "createdAt": Date.now(),
+                                    /* @ts-ignore */
+                                    "createdAt": SmartWeave.block.timestamp,
                                     "alias": alias
                                     }
                                 }
@@ -203,7 +206,8 @@ async function handle(state: State, action: Action) {
                         state.connections[caller][target] = {
                             [namespace]: {
                                 [connectionType]: {
-                                    "createdAt": Date.now(),
+                                    /* @ts-ignore */
+                                    "createdAt": SmartWeave.block.timestamp,
                                     "alias": alias
                                 }
                             }
@@ -214,7 +218,8 @@ async function handle(state: State, action: Action) {
                         [target]: {
                             [namespace]: {
                                 [connectionType]: {
-                                    "createdAt": Date.now(),
+                                    /* @ts-ignore */
+                                    "createdAt": SmartWeave.block.timestamp,
                                     "alias": alias
                                 }
                             }
