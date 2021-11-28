@@ -17,7 +17,7 @@ type State = {
 }
 
 // Action can be either a follow, an unfollow, a followers lookup or followings lookup call
-type Action = FollowAction | UnfollowAction | FollowersAction | FollowingsAction
+type Action = FollowAction | UnfollowAction | FollowingsAction | FollowersAction
 
 // Declares the follow action's type
 type FollowAction = {
@@ -42,20 +42,20 @@ type UnfollowAction = {
     }
 }
 
-// Declares the followers action's type
-type FollowersAction = {
-    caller: string,
-    input: {
-        function: "followers",
-        target?: string
-    }
-}
-
 // Declares the followings action's type
 type FollowingsAction = {
     caller: string,
     input: {
         function: "followings",
+        target?: string
+    }
+}
+
+// Declares the followers action's type
+type FollowersAction = {
+    caller: string,
+    input: {
+        function: "followers",
         target?: string
     }
 }
