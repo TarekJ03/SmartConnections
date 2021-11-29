@@ -1,5 +1,6 @@
 // Declares the state's type
 type State = {
+    owners: string[],
     namespaces: string[],
     connectionTypes: string[],
     connections: {
@@ -17,7 +18,7 @@ type State = {
 }
 
 // Action can be either a follow, an unfollow, a followers lookup or followings lookup call
-type Action = FollowAction | UnfollowAction | FollowingsAction | FollowersAction
+type Action = FollowAction | UnfollowAction | FollowingsAction | FollowersAction | NamespaceAction | ConnectionTypesAction
 
 // Declares the follow action's type
 type FollowAction = {
@@ -57,6 +58,24 @@ type FollowersAction = {
     input: {
         function: "followers",
         target?: string
+    }
+}
+
+// Declares the namespace update action's tyoe
+type NamespaceAction = {
+    caller: string,
+    input: {
+        function: "addNamespaces",
+        namespaces: string[]
+    }
+}
+
+// Declares the connectionTypes update action's type
+type ConnectionTypesAction = {
+    caller: string,
+    input: {
+        function: "addConnectionTypes",
+        connectionTypes: string[]
     }
 }
 
@@ -153,6 +172,42 @@ async function handle(state: State, action: Action) {
                 if (input.target && !(Object.keys(state.connections).flatMap(address => Object.keys(state.connections[address])).includes(input.target))){
                     /* @ts-ignore */
                     throw new ContractError(`${target} does not have any followers`)
+                } return true
+            }
+        } return false
+    }
+
+    // Guard to check if the passed action is a valid call to update the namespaces
+    function isValidNamespaces(action: Action): action is NamespaceAction{
+        if (arrayIsEqual(Object.keys(input), ["function", "namespaces"])){
+            if (!(state.owners.includes(action.caller))){
+                /* @ts-ignore */
+                throw new ContractError("The calling address is not allowed to change this contract's configuration")
+            } if (input.function == "addNamespaces"){
+                if (!(Array.isArray(input.namespaces)) || !(input.namespaces.every(element => typeof element == "string"))){
+                  /* @ts-ignore */
+                    throw new ContractError(`Namespaces ${input.namespaces} are not exclusively strings`)
+                } if (input.namespaces.every(element => state.namespaces.includes(element))){
+                    /* @ts-ignore */
+                    throw new ContractError(`Namespaces ${input.namespaces} are all already present in the current namespaces: ${state.namespaces}`)
+                } return true
+            }
+        } return false
+    }
+
+    // Guard to check if the passed action is a valid call to update the connection types
+    function isValidConnectionTypes(action: Action): action is ConnectionTypesAction{
+        if (arrayIsEqual(Object.keys(input), ["function", "connectionTypes"])){
+            if (!(state.owners.includes(action.caller))){
+                /* @ts-ignore */
+                throw new ContractError("The calling address is not allowed to change this contract's configuration")
+            } if (input.function == "addConnectionTypes"){
+                if (Array.isArray(input.connectionTypes) && input.connectionTypes.every(element => typeof element == "string")){
+                    /* @ts-ignore */
+                    throw new ContractError(`Connection types ${input.connectionTypes} are not exclusively strings`)
+                } if (input.connectionTypes.every(element => state.connectionTypes.includes(element))){
+                    /* @ts-ignore */
+                    throw new ContractError(`Connection types ${input.connectionTypes} are all already present in the current connection types: ${state.connectionTypes}`)
                 } return true
             }
         } return false
@@ -347,6 +402,16 @@ async function handle(state: State, action: Action) {
                     }))
                 }
             }
+        }
+        // If it's a valid namespaces update call, update the namespaces
+        if (isValidNamespaces(action)){
+            action.input.namespaces.forEach(newNamespace => state.namespaces.includes(newNamespace) ? {} : state.namespaces.push(newNamespace))
+            return { state }
+        }
+        // If it's a valid connection types update call, update the connection types
+        if (isValidConnectionTypes(action)){
+            action.input.connectionTypes.forEach(newConnectionTypes => state.connectionTypes.includes(newConnectionTypes) ? {} : state.connectionTypes.push(newConnectionTypes))
+            return { state }
         }
     }
     /* @ts-ignore */
