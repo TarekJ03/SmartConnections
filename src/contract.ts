@@ -107,7 +107,7 @@ async function handle(state: State, action: Action) {
 
     // Guard to check if the passed action is valid
     function isValidAction(action: any): action is Action{
-        return isValidUnfollow(action) || isValidFollow(action) || isValidFollowings(action) || isValidFollowers(action)
+        return isValidUnfollow(action) || isValidFollow(action) || isValidFollowings(action) || isValidFollowers(action) || isValidNamespaces(action) || isValidConnectionTypes(action)
     }
 
     // Guard to check if the passed action is a valid follow call
