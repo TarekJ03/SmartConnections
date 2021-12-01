@@ -157,6 +157,9 @@ async function handle(state: State, action: Action) {
                         } if (!(Object.keys(state.namespaces).includes(input.namespace))){
                             /* @ts-ignore */
                             throw new ContractError(`Namespace ${input.namespace} is not a valid namespace`)
+                        } if (!(Object.keys(state.connections[input.target]).includes(input.namespace))){
+                            /* @ts-ignore */ 
+                            throw new ContractError(`${action.caller} is not connected to ${input.target} on ${input.namespace}`)
                         } if (input.connectionType){
                             if (!(typeof input.connectionType == "string")){
                                 /* @ts-ignore */
@@ -164,6 +167,9 @@ async function handle(state: State, action: Action) {
                             } if (!(state.namespaces[input.namespace][input.connectionType].includes(input.connectionType))){
                                 /* @ts-ignore */
                                 throw new ContractError(`${input.connectionType} is not a valid connection type for the namespace ${input.namespace}`)
+                            } if (!(Object.keys(state.connections[input.target][input.namespace]).includes(input.namespace))){
+                                /* @ts-ignore */ 
+                                throw new ContractError(`${action.caller} is not connected to ${input.target} on ${input.namespace} with the connection type ${input.connectionType}`)
                             }
                         }
                     }
