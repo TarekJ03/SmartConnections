@@ -1,6 +1,6 @@
 import Arweave = require('arweave');
 import Arlocal from "arlocal"
-import {createContract, interactRead, interactWrite} from "smartweave"
+import {createContract, readContract, interactRead, interactWrite} from "smartweave"
 import fetch = require("node-fetch")
 import * as fs from "fs"
 
@@ -37,37 +37,44 @@ async function main() {
   const contractSource = fs.readFileSync("dist/contract.js", "utf-8")
   // The initial state only contains the namespace OpenSea and the connectionTypes follow and superfollow
   const initialState = {
-    namespaces: ["OpenSea"],
-    connectionTypes: ["follow", "superfollow"],
+    owners: [address],
+    namespaces: {OpenSea: ["follow", "superfollow"]},
     connections: {}
   }
   // Create the contract
   const contract = await createContract(arweave, wallet, contractSource, JSON.stringify(initialState))
   // This interaction will go through
   await interactWrite(arweave, wallet, contract, {
-    "function": "connect",
-    "target": otherAddress,
-    "namespace": "OpenSea",
-    "connectionType": "follow",
+    function: "follow",
+    target: otherAddress,
+    namespace: "OpenSea",
+    connectionType: "follow",
   })
+  // Mining the block in order to save the changes on the chain
+  await mine()
   // This interaction will go through because it's a different connection type
   await interactWrite(arweave, wallet, contract, {
-    "function": "connect",
-    "target": otherAddress,
-    "namespace": "OpenSea",
-    "connectionType": "superfollow",
+    function: "follow",
+    target: "0x507877C2E26f1387432D067D2DaAfa7d0420d90a",
+    namespace: "OpenSea",
+    connectionType: "superfollow",
   })
-  // This interaction will fail because the third wallet has not had any transactions
   await interactWrite(arweave, otherWallet, contract, {
-    "function": "connect",
-    "target": thirdAddress,
-    "namespace": "OpenSea",
-    "connectionType": "follow",
+    function: "follow",
+    target: "0x507877C2E26f1387432D067D2DaAfa7d0420d90a",
+    namespace: "OpenSea",
+    connectionType: "follow",
+  })
+  await interactWrite(arweave, wallet, contract, {
+    function: "addNamespaces",
+    namespaces: {"mastodon": ["follow"]}
   })
   // Mining the block in order to save the changes on the chain
   await mine()
   // Print the output of interactively reading ("lookup") the state, returns all connections keyed their owners
-  console.log(await interactRead(arweave, wallet, contract, {"function": "lookup"}))
+  console.log(await readContract(arweave, contract))
+  console.log(await interactRead(arweave, wallet, contract, {function: "followings"}))
+  console.log(await interactRead(arweave, wallet, contract, {function: "followers"}))
   await arlocal.stop()
 }
   
