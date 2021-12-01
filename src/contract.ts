@@ -292,23 +292,16 @@ async function handle(state: State, action: Action) {
                 if (state.connections[caller][target]){
                     if (state.connections[caller][target][namespace]){
                         if (state.connections[caller][target][namespace][connectionType]){
-                            if (alias != state.connections[caller][target][namespace][connectionType]["alias"]){
-                                state.connections[caller][target][namespace][connectionType] = { 
-                                    /* @ts-ignore */
-                                    "createdAt": SmartWeave.block.timestamp,
-                                    "alias": alias
-                                    }
-                            } else {
+                            if (alias == state.connections[caller][target][namespace][connectionType].alias){
                                 /* @ts-ignore */
                                 // If the target has already been connected to in this namespace with this connection type and this alias, reject the call 
                                 throw new ContractError(`${caller} is already connected to ${target} on ${namespace} with connection type ${connectionType}${alias ? "as" + alias : ""}`)
                                 }
-                        } else {
-                            state.connections[caller][target][namespace][connectionType] = { 
-                                /* @ts-ignore */
-                                "createdAt": SmartWeave.block.timestamp,
-                                "alias": alias
-                                }
+                            }
+                        state.connections[caller][target][namespace][connectionType] = { 
+                            /* @ts-ignore */
+                            "createdAt": SmartWeave.block.timestamp,
+                            "alias": alias
                             }
                     } else {
                         state.connections[caller][target][namespace] = {
