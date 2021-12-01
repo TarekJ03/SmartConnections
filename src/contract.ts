@@ -371,51 +371,49 @@ async function handle(state: State, action: Action) {
         if (isValidFollowings(action)){
             const target = action.input.target
             const targetNamespace = action.input.namespace
-            // If no target is passed, return all followings
+            // Return the followings of the target on the namespace (if given) as an object, keyed by the following address
             return { result: Object.fromEntries(Object.keys(state.connections).filter(origin => !(target) || origin == target).map(origin => {
                 return [ origin, Object.keys(state.connections[origin]).flatMap(following => {
                     return Object.keys(state.connections[origin][following]).filter(namespace => !(targetNamespace) || namespace == targetNamespace).flatMap(namespace => {
-                        return Object.keys(state.connections[origin][following][namespace]).flatMap(connectionType => {
+                        return Object.keys(state.connections[origin][following][namespace]).flatMap((connectionType): FollowingConnection => {
                             return {
-                            ConnectionType: connectionType,
+                            connectionType,
                             target: following,
-                            namespace: namespace,
+                            namespace,
                             createdAt: state.connections[origin][following][namespace][connectionType]["createdAt"],
                             alias: state.connections[origin][following][namespace][connectionType]["alias"]
                             }
                         })
                     })
-                })]
-            }))}
+                }) ]
+            })) }
         }
         // If it's a valid followers call, get all followers
         if (isValidFollowers(action)){
             const target = action.input.target
             const targetNamespace = action.input.namespace
-            // If no target is passed, return all followers
             const alreadyDone: string[] = []
-            return {
-                result: Object.fromEntries(Object.keys(state.connections).flatMap(outerOrigin => {
-                    return Object.keys(state.connections[outerOrigin]).filter(outerFollowing => !(alreadyDone.includes(outerFollowing)) && (!(target) || outerFollowing == target)).map(outerFollowing => {
-                        return [outerFollowing, Object.keys(state.connections).flatMap(origin => {
-                            alreadyDone.push(outerFollowing)
-                            return Object.keys(state.connections[origin]).filter(following => following == outerFollowing).flatMap(following => {
-                                return Object.keys(state.connections[origin][following]).filter(namespace => !(targetNamespace) || namespace == targetNamespace).flatMap(namespace => {
-                                    return Object.keys(state.connections[origin][following][namespace]).flatMap(connectionType => {
-                                        return {
-                                        connectionType,
-                                        origin: origin,
-                                        namespace,
-                                        createdAt: state.connections[origin][following][namespace][connectionType]["createdAt"],
-                                        alias: state.connections[origin][following][namespace][connectionType]["alias"]
-                                        }
-                                    })
+            // Return the followers of the target on the namespace (if given) as an object, keyed by the followed address
+            return { result: Object.fromEntries(Object.keys(state.connections).flatMap(outerOrigin => {
+                return Object.keys(state.connections[outerOrigin]).filter(outerFollowing => !(alreadyDone.includes(outerFollowing)) && (!(target) || outerFollowing == target)).map(outerFollowing => {
+                    return [outerFollowing, Object.keys(state.connections).flatMap(origin => {
+                        alreadyDone.push(outerFollowing)
+                        return Object.keys(state.connections[origin]).filter(following => following == outerFollowing).flatMap(following => {
+                            return Object.keys(state.connections[origin][following]).filter(namespace => !(targetNamespace) || namespace == targetNamespace).flatMap(namespace => {
+                                return Object.keys(state.connections[origin][following][namespace]).flatMap((connectionType): FollowerConnection => {
+                                    return {
+                                    connectionType,
+                                    origin: origin,
+                                    namespace,
+                                    createdAt: state.connections[origin][following][namespace][connectionType]["createdAt"],
+                                    alias: state.connections[origin][following][namespace][connectionType]["alias"]
+                                    }
                                 })
                             })
-                        })]
-                    })
-                }))
-            }
+                        })
+                    }) ]
+                })
+            })) }
         }
         // If it's a valid namespaces update call, update the namespaces
         if (isValidNamespaces(action)){
