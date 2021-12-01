@@ -1,8 +1,9 @@
 // Declares the state's type
 type State = {
     owners: string[],
-    namespaces: string[],
-    connectionTypes: string[],
+    namespaces: {
+        [namespace: string]: string[]
+    },
     connections: {
         [address: string]: {
             [target: string]: {
@@ -66,7 +67,9 @@ type NamespaceAction = {
     caller: string,
     input: {
         function: "addNamespaces",
-        namespaces: string[]
+        namespaces: {
+            [namespace: string]: string[]
+        }
     }
 }
 
@@ -75,6 +78,7 @@ type ConnectionTypesAction = {
     caller: string,
     input: {
         function: "addConnectionTypes",
+        namespace: string,
         connectionTypes: string[]
     }
 }
@@ -121,12 +125,12 @@ async function handle(state: State, action: Action) {
                     } if (input.alias && !(typeof input.alias == "string")){
                         /* @ts-ignore */
                         throw new ContractError(`Alias ${alias} was passed but is not a string`)
-                    } if (!(state.namespaces.includes(input.namespace))){
+                    } if (!(Object.keys(state.namespaces).includes(input.namespace))){
                         /* @ts-ignore */
                         throw new ContractError(`Namespace ${input.namespace} is not a valid namespace`)
-                    } if (!(state.connectionTypes.includes(input.connectionType))){
+                    } if (!(state.namespaces[input.namespace].includes(input.connectionType))){
                         /* @ts-ignore */
-                        throw new ContractError(`Connection type ${input.connectionType} is not a known type of connection`)
+                        throw new ContractError(`Connection type ${input.connectionType} is not a valid connection type for the namespace ${input.namespace}`)
                     }
                 } return true
             }
@@ -135,18 +139,31 @@ async function handle(state: State, action: Action) {
 
     // Guard to check if the passed action is a valid unfollow call
     function isValidUnfollow(action: Action): action is UnfollowAction{
-        if (arrayIsEqual(Object.keys(input), ["function", "target", "namespace", "connectionType"])){
+        if (arrayIsEqual(Object.keys(input), ["function", "target"]) || arrayIsEqual(Object.keys(input), ["function", "target", "namespace"]) || arrayIsEqual(Object.keys(input), ["function", "target", "namespace", "connectionType"])){
             if (input.function == "unfollow"){
-                if (typeof input.target == "string" && typeof input.namespace == "string" && typeof input.connectionType == "string"){
-                    if (!(state.namespaces.includes(input.namespace))){
+                if (input.target){
+                    if (!(typeof input.target == "string")){
                         /* @ts-ignore */
-                        throw new ContractError(`Namespace ${input.namespace} is not a valid namespace`)
-                    } if (!(state.connectionTypes.includes(input.connectionType))){
-                        /* @ts-ignore */
-                        throw new ContractError(`Connection type ${input.connectionType} is not a known type of connection`)
+                        throw new ContractError(`${input.target} is not a string`)
                     } if (!(Object.keys(state.connections[action.caller]).includes(input.target))){
                         /* @ts-ignore */ 
                         throw new ContractError(`${action.caller} is not connected to ${input.target}`)
+                    } if (input.namespace){
+                        if (!(typeof input.namespace == "string")){
+                            /* @ts-ignore */
+                            throw new ContractError(`${input.namespace} is not a string`)
+                        } if (!(Object.keys(state.namespaces).includes(input.namespace))){
+                            /* @ts-ignore */
+                            throw new ContractError(`Namespace ${input.namespace} is not a valid namespace`)
+                        } if (input.connectionType){
+                            if (!(typeof input.connectionType == "string")){
+                                /* @ts-ignore */
+                                throw new ContractError(`${input.connectionType} is not a string`)
+                            } if (!(state.namespaces[input.namespace][input.connectionType].includes(input.connectionType))){
+                                /* @ts-ignore */
+                                throw new ContractError(`${input.connectionType} is not a valid connection type for the namespace ${input.namespace}`)
+                            }
+                        }
                     }
                 } return true
             }
@@ -184,12 +201,12 @@ async function handle(state: State, action: Action) {
                 /* @ts-ignore */
                 throw new ContractError("The calling address is not allowed to change this contract's configuration")
             } if (input.function == "addNamespaces"){
-                if (!(Array.isArray(input.namespaces)) || !(input.namespaces.every(element => typeof element == "string"))){
+                if (!(typeof input.namespaces == "object") || !(Object.keys(input.namespaces).every(namespace => typeof namespace == "string" && Array.isArray(input.namespaces[namespace]) && input.namespaces[namespace].every(connectionType => typeof connectionType == "string")))){
                   /* @ts-ignore */
-                    throw new ContractError(`Namespaces ${input.namespaces} are not exclusively strings`)
-                } if (input.namespaces.every(element => state.namespaces.includes(element))){
+                    throw new ContractError(`${input.namespaces} are not exclusively string: string[] pairs`)
+                } if (Object.keys(input.namespaces).every(element => Object.keys(state.namespaces).includes(element))){
                     /* @ts-ignore */
-                    throw new ContractError(`Namespaces ${input.namespaces} are all already present in the current namespaces: ${state.namespaces}`)
+                    throw new ContractError(`Namespaces ${input.namespaces} are all already present in the current namespaces: ${Object.keys(state.namespaces)}`)
                 } return true
             }
         } return false
@@ -197,15 +214,18 @@ async function handle(state: State, action: Action) {
 
     // Guard to check if the passed action is a valid call to update the connection types
     function isValidConnectionTypes(action: Action): action is ConnectionTypesAction{
-        if (arrayIsEqual(Object.keys(input), ["function", "connectionTypes"])){
+        if (arrayIsEqual(Object.keys(input), ["function", "namespace", "connectionTypes"])){
             if (!(state.owners.includes(action.caller))){
                 /* @ts-ignore */
                 throw new ContractError("The calling address is not allowed to change this contract's configuration")
             } if (input.function == "addConnectionTypes"){
-                if (Array.isArray(input.connectionTypes) && input.connectionTypes.every(element => typeof element == "string")){
+                if (!(Object.keys(state.namespaces).includes(input.namespace))){
+                    /* @ts-ignore */
+                    throw new ContractError(`Namespace ${input.namespace} is not a valid namespace`)
+                } if ((Array.isArray(input.connectionTypes) && input.connectionTypes.every(element => typeof element == "string"))){
                     /* @ts-ignore */
                     throw new ContractError(`Connection types ${input.connectionTypes} are not exclusively strings`)
-                } if (input.connectionTypes.every(element => state.connectionTypes.includes(element))){
+                } if (input.connectionTypes.every(element => state.namespaces[input.namespace].includes(element))){
                     /* @ts-ignore */
                     throw new ContractError(`Connection types ${input.connectionTypes} are all already present in the current connection types: ${state.connectionTypes}`)
                 } return true
@@ -405,12 +425,12 @@ async function handle(state: State, action: Action) {
         }
         // If it's a valid namespaces update call, update the namespaces
         if (isValidNamespaces(action)){
-            action.input.namespaces.forEach(newNamespace => state.namespaces.includes(newNamespace) ? {} : state.namespaces.push(newNamespace))
+            Object.keys(action.input.namespaces).forEach(newNamespace => Object.keys(state.namespaces).includes(newNamespace) ? {} : state.namespaces[newNamespace] = action.input.namespaces[newNamespace])
             return { state }
         }
         // If it's a valid connection types update call, update the connection types
         if (isValidConnectionTypes(action)){
-            action.input.connectionTypes.forEach(newConnectionTypes => state.connectionTypes.includes(newConnectionTypes) ? {} : state.connectionTypes.push(newConnectionTypes))
+            action.input.connectionTypes.forEach(newConnectionType => state.namespaces[action.input.namespace].includes(newConnectionType) ? {} : state.namespaces[action.input.namespace].push(newConnectionType))
             return { state }
         }
     }
