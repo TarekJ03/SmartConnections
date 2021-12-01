@@ -50,6 +50,7 @@ type FollowingsAction = {
     input: {
         function: "followings",
         target?: string
+        namespace?: string
     }
 }
 
@@ -59,6 +60,7 @@ type FollowersAction = {
     input: {
         function: "followers",
         target?: string
+        namespace?: string
     }
 }
 
@@ -85,7 +87,7 @@ type ConnectionTypesAction = {
 
 // Declares the `return` parameter type for an address' followings
 type FollowingConnection = {
-    ConnectionType: string,
+    connectionType: string,
     target: string,
     namespace: string,
     createdAt: Number,
@@ -94,7 +96,7 @@ type FollowingConnection = {
 
 // Declares the `return` parameter type for an address' followers
 type FollowerConnection = {
-    ConnectionType: string,
+    connectionType: string,
     origin: string,
     namespace: string,
     createdAt: Number,
@@ -172,11 +174,21 @@ async function handle(state: State, action: Action) {
 
     // Guard to check if the passed action is a valid followings call
     function isValidFollowings(action: Action): action is FollowingsAction{
-        if (arrayIsEqual(Object.keys(input), ["function"]) || arrayIsEqual(Object.keys(input), ["function", "target"])){
+        if (arrayIsEqual(Object.keys(input), ["function"]) || arrayIsEqual(Object.keys(input), ["function", "target"]) || arrayIsEqual(Object.keys(input), ["function", "target", "namespace"])){
             if (input.function == "followings"){
-                if (input.target && !(Object.keys(state.connections).includes(input.target))){
-                    /* @ts-ignore */
-                    throw new ContractError(`${target} is not following any address`)
+                if (input.target){
+                    if (typeof input.target != "string"){
+                        /* @ts-ignore */
+                        throw new ContractError(`${input.target} is not a string`)
+                    } if (input.namespace){
+                        if (typeof input.namespace != "string"){
+                            /* @ts-ignore */
+                            throw new ContractError(`${input.namespace} is not a string`)
+                        } if (!(Object.keys(state.namespaces).includes(input.namespace))){
+                            /* @ts-ignore */
+                            throw new ContractError(`Namespace ${input.namespace} is not a valid namespace`)
+                        }
+                    }
                 } return true
             }
         } return false
@@ -184,11 +196,21 @@ async function handle(state: State, action: Action) {
 
     // Guard to check if the passed action is a valid followers call
     function isValidFollowers(action: Action): action is FollowersAction{
-        if (arrayIsEqual(Object.keys(input), ["function"]) || arrayIsEqual(Object.keys(input), ["function", "target"])){
+        if (arrayIsEqual(Object.keys(input), ["function"]) || arrayIsEqual(Object.keys(input), ["function", "target"]) || arrayIsEqual(Object.keys(input), ["function", "target", "namespace"])){
             if (input.function == "followers"){
-                if (input.target && !(Object.keys(state.connections).flatMap(address => Object.keys(state.connections[address])).includes(input.target))){
-                    /* @ts-ignore */
-                    throw new ContractError(`${target} does not have any followers`)
+                if (input.target){
+                    if (typeof input.target != "string"){
+                        /* @ts-ignore */
+                        throw new ContractError(`${input.target} is not a string`)
+                    } if (input.namespace){
+                        if (typeof input.namespace != "string"){
+                            /* @ts-ignore */
+                            throw new ContractError(`${input.namespace} is not a string`)
+                        } if (!(Object.keys(state.namespaces).includes(input.namespace))){
+                            /* @ts-ignore */
+                            throw new ContractError(`Namespace ${input.namespace} is not a valid namespace`)
+                        }
+                    }
                 } return true
             }
         } return false
@@ -231,48 +253,6 @@ async function handle(state: State, action: Action) {
                 } return true
             }
         } return false
-    }
-
-    // Function that returns the FollowingConnection[] array of all connections from the nested objects, keyed by the follower
-    function getFollowings(target: string): FollowingConnection[] {
-        // Returns all addresses the target is following
-        return Object.keys(state.connections[target]).flatMap(following => {
-            return Object.keys(state.connections[target][following]).flatMap(namespace => {
-                return Object.keys(state.connections[target][following][namespace]).flatMap(connectionType => {
-                    return {
-                    ConnectionType: connectionType,
-                    target: following,
-                    namespace: namespace,
-                    createdAt: state.connections[target][following][namespace][connectionType]["createdAt"],
-                    alias: state.connections[target][following][namespace][connectionType]["alias"]
-                    }
-                })
-            })
-        })
-    }
-
-    // Function that returns the FollowerConnection[] array of all connections from the nested objects, keyed by the followed address
-    function getFollowers(target: string): FollowerConnection[] {
-        // Returns all addresses the target is followed by
-        return Object.keys(state.connections).flatMap(address => {
-            return Object.keys(state.connections[address]).flatMap(following => {
-                if (following == target){
-                    return Object.keys(state.connections[address][following]).flatMap(namespace => {
-                        return Object.keys(state.connections[address][following][namespace]).flatMap(connectionType => {
-                            return {
-                            ConnectionType: connectionType,
-                            origin: address,
-                            namespace: namespace,
-                            createdAt: state.connections[address][following][namespace][connectionType]["createdAt"],
-                            alias: state.connections[address][following][namespace][connectionType]["alias"]
-                            }
-                        })
-                    })
-                } else {
-                    return []
-                }
-            })
-        })
     }
 
     // Primitive check to ensure a given target matches the Ethereum address specification
@@ -390,37 +370,51 @@ async function handle(state: State, action: Action) {
         // If it's a valid followings call, get all followings
         if (isValidFollowings(action)){
             const target = action.input.target
-            if (target) {
-                // If there's a target, return this address' followings
-                const followings = {[target]: getFollowings(target)}
-                return { result: followings }
-            } else {
-                // If no target is passed, return all followings
-                return { result: Object.fromEntries(Object.keys(state.connections).map(target => [target, getFollowings(target)])) }
-            }
+            const targetNamespace = action.input.namespace
+            // If no target is passed, return all followings
+            return { result: Object.fromEntries(Object.keys(state.connections).filter(origin => !(target) || origin == target).map(origin => {
+                return [ origin, Object.keys(state.connections[origin]).flatMap(following => {
+                    return Object.keys(state.connections[origin][following]).filter(namespace => !(targetNamespace) || namespace == targetNamespace).flatMap(namespace => {
+                        return Object.keys(state.connections[origin][following][namespace]).flatMap(connectionType => {
+                            return {
+                            ConnectionType: connectionType,
+                            target: following,
+                            namespace: namespace,
+                            createdAt: state.connections[origin][following][namespace][connectionType]["createdAt"],
+                            alias: state.connections[origin][following][namespace][connectionType]["alias"]
+                            }
+                        })
+                    })
+                })]
+            }))}
         }
         // If it's a valid followers call, get all followers
         if (isValidFollowers(action)){
             const target = action.input.target
-            if (target) {
-                // If there's a target, return this address' followers
-                const followers = {[target]: getFollowers(target)}
-                return {result: followers}
-            } else {
-                // If no target is passed, return all followers
-                const alreadyDone: string[] = []
-                return {
-                    result: Object.fromEntries(Object.keys(state.connections).flatMap(address => {
-                        return Object.keys(state.connections[address]).map(target => {
-                            if (alreadyDone.includes(target)){
-                                return ["", []];
-                            } else {
-                                alreadyDone.push(target)
-                                return [target, getFollowers(target)]
-                            }
-                        })
-                    }))
-                }
+            const targetNamespace = action.input.namespace
+            // If no target is passed, return all followers
+            const alreadyDone: string[] = []
+            return {
+                result: Object.fromEntries(Object.keys(state.connections).flatMap(outerOrigin => {
+                    return Object.keys(state.connections[outerOrigin]).filter(outerFollowing => !(alreadyDone.includes(outerFollowing)) && (!(target) || outerFollowing == target)).map(outerFollowing => {
+                        return [outerFollowing, Object.keys(state.connections).flatMap(origin => {
+                            alreadyDone.push(outerFollowing)
+                            return Object.keys(state.connections[origin]).filter(following => following == outerFollowing).flatMap(following => {
+                                return Object.keys(state.connections[origin][following]).filter(namespace => !(targetNamespace) || namespace == targetNamespace).flatMap(namespace => {
+                                    return Object.keys(state.connections[origin][following][namespace]).flatMap(connectionType => {
+                                        return {
+                                        connectionType,
+                                        origin: origin,
+                                        namespace,
+                                        createdAt: state.connections[origin][following][namespace][connectionType]["createdAt"],
+                                        alias: state.connections[origin][following][namespace][connectionType]["alias"]
+                                        }
+                                    })
+                                })
+                            })
+                        })]
+                    })
+                }))
             }
         }
         // If it's a valid namespaces update call, update the namespaces
