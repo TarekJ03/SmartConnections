@@ -35,7 +35,9 @@ type State = {
 }
 ```
 `owners`: An array of addresses with access to configuration methods **(unchangable)**
+
 `namespaces`: An object containing the namespaces and their respective connection types
+
 `connections`: nested objects, keyed by each parameter a connection can have. This format makes it easier to process the write calls, but it might not be the preferred format when actually working with the data. That's why, alternatively to the basic `readContract()` option of retrieving the data, there are two more:
 
 ### `interactRead`
@@ -47,16 +49,14 @@ Calling the contract with the input `{function: "followings"}` will return all f
 Input:
 
 ```typescript
-type FollowingsAction = {
-    caller: string,
-    input: {
-        function: "followings",
-        target?: string
-        namespace?: string
-    }
+input = {
+    function: "followings",
+    target?: string,
+    namespace?: string
 }
 ```
 `target`: Only this address' followings are returned (optional)
+
 `namespace`: Only followings in this namespace are returned (optional)
 
 Output:
@@ -75,21 +75,19 @@ Output:
 ```
 #### `followers`
 
-Calling the contract with the input `{function: "followers"}` will return all followers an address has as an array, keyed by the address that is being followed. In practice
+Calling the contract with the input `{function: "followers"}` will return all followers an address has as an array, keyed by the address that is being followed.
 
 Input:
 
 ```typescript
-type FollowingsAction = {
-    caller: string,
-    input: {
-        function: "followers",
-        target?: string
-        namespace?: string
-    }
+input = {
+    function: "followers",
+    target?: string,
+    namespace?: string
 }
 ```
 `target`: Only this address' followings are returned (optional)
+
 `namespace`: Only followings in this namespace are returned (optional)
 
 Output:
@@ -115,17 +113,22 @@ This method allows the calling address to follow a target address on a specific 
 Input:
 
 ```typescript
-type FollowAction = {
-    caller: string,
-    input: {
-        function: "follow",
-        target: string,
-        namespace: string,
-        connectionType: string,
-        alias?: string
-    }
+input = {
+    function: "follow",
+    target: string,
+    namespace: string,
+    connectionType: string,
+    alias?: string
 }
 ```
+
+`target`: The address to connected to
+
+`namespace`: The namespace the connection is in
+
+`connectionType`: The connection type of this connection
+
+`alias`: An alias for this connection (optional)
 
 #### `unfollow`
 
@@ -134,16 +137,21 @@ This method allows the calling address to delete previously established followin
 Input:
 
 ```typescript
-type UnfollowAction = {
-    caller: string,
-    input: {
-        function: "unfollow",
+input = {
+    function: "unfollow",
         target?: string,
         namespace?: string,
-        connectionType?: string,
-    }
+        connectionType?: string
 }
 ```
+
+`target`: The address to disconnected from (optional)
+
+`namespace`: The namespace the connection is in (optional)
+
+`connectionType`: The connection type of the connection (optional)
+
+`alias`: An alias for this connection (optional)
 
 #### `addNamespaces`
 
@@ -152,30 +160,30 @@ This method allows addresses that are members of the `owners` group of addresses
 Input:
 
 ```typescript
-type NamespaceAction = {
-    caller: string,
-    input: {
-        function: "addNamespaces",
-        namespaces: {
-            [namespace: string]: string[]
-        }
+input = {
+    function: "addNamespaces",
+    namespaces: {
+        [namespace: string]: string[]
     }
 }
 ```
 
+`namespaces`: An object containing the namespaces as keys and their respective connection types as values
+
 #### `addConnectionTypes`
 
-This method allows addresses that are membes of the `owners` group of addresses to add connection types to an already present namespace.
+This method allows addresses that are members of the `owners` group of addresses to add connection types to an already present namespace.
 
 Input:
 
 ```typescript
-type ConnectionTypesAction = {
-    caller: string,
-    input: {
-        function: "addConnectionTypes",
-        namespace: string,
-        connectionTypes: string[]
-    }
+input = {
+    function: "addConnectionTypes",
+    namespace: string,
+    connectionTypes: string[]
 }
 ```
+
+`namespace`: The namespace to add the connection types to
+
+`connectionTypes`: An array of connection types
