@@ -111,6 +111,11 @@ async function handle(state: State, action: Action) {
         return arr1.length == arr2.length && arr1.every((element, index) => element == arr2[index])
     }
 
+    // Utility to check if an object has no keys
+    function objectIsEmpty(obj: object){
+        return Object.keys(obj).length == 0
+    }
+
     // Guard to check if the passed action is valid
     function isValidAction(action: any): action is Action{
         return isValidUnfollow(action) || isValidFollow(action) || isValidFollowings(action) || isValidFollowers(action) || isValidNamespaces(action) || isValidConnectionTypes(action)
@@ -157,17 +162,17 @@ async function handle(state: State, action: Action) {
                         } if (!(Object.keys(state.namespaces).includes(input.namespace))){
                             /* @ts-ignore */
                             throw new ContractError(`Namespace ${input.namespace} is not a valid namespace`)
-                        } if (!(Object.keys(state.connections[input.target]).includes(input.namespace))){
+                        } if (!(Object.keys(state.connections[action.caller][input.target]).includes(input.namespace))){
                             /* @ts-ignore */ 
                             throw new ContractError(`${action.caller} is not connected to ${input.target} on ${input.namespace}`)
                         } if (input.connectionType){
                             if (!(typeof input.connectionType == "string")){
                                 /* @ts-ignore */
                                 throw new ContractError(`${input.connectionType} is not a string`)
-                            } if (!(state.namespaces[input.namespace][input.connectionType].includes(input.connectionType))){
+                            } if (!(state.namespaces[input.namespace].includes(input.connectionType))){
                                 /* @ts-ignore */
                                 throw new ContractError(`${input.connectionType} is not a valid connection type for the namespace ${input.namespace}`)
-                            } if (!(Object.keys(state.connections[input.target][input.namespace]).includes(input.namespace))){
+                            } if (!(Object.keys(state.connections[action.caller][input.target][input.namespace]).includes(input.connectionType))){
                                 /* @ts-ignore */ 
                                 throw new ContractError(`${action.caller} is not connected to ${input.target} on ${input.namespace} with the connection type ${input.connectionType}`)
                             }
@@ -351,17 +356,17 @@ async function handle(state: State, action: Action) {
                 if (namespace){
                     if (connectionType){
                         delete state.connections[caller][target][namespace][connectionType]
-                        if (state.connections[caller][target][namespace] == {}){
+                        if (objectIsEmpty(state.connections[caller][target][namespace])){
                             delete state.connections[caller][target][namespace]
                         }
                     } else {
                         delete state.connections[caller][target][namespace]
-                    } if (state.connections[caller][target] == {}){
+                    } if (objectIsEmpty(state.connections[caller][target])){
                         delete state.connections[caller][target]        
                     }
                 } else {
                     delete state.connections[caller][target]
-                } if (state.connections[caller] == {}){
+                } if (objectIsEmpty(state.connections[caller])){
                     delete state.connections[caller]
                 }
             } else {
