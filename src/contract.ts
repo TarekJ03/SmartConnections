@@ -250,7 +250,10 @@ async function handle(state: State, action: Action) {
                 if (!(Object.keys(state.namespaces).includes(input.namespace))){
                     /* @ts-ignore */
                     throw new ContractError(`Namespace ${input.namespace} is not a valid namespace`)
-                } if ((Array.isArray(input.connectionTypes) && input.connectionTypes.every(element => typeof element == "string"))){
+                } if (!Array.isArray(input.connectionTypes)) {
+                    /* @ts-ignore */
+                    throw new ContractError(`${input.connectionTypes} is not an array`)
+                } if (!(input.connectionTypes.every(element => typeof element == "string"))){
                     /* @ts-ignore */
                     throw new ContractError(`Connection types ${input.connectionTypes} are not exclusively strings`)
                 } if (input.connectionTypes.every(element => state.namespaces[input.namespace].includes(element))){
