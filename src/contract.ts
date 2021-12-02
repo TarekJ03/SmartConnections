@@ -269,15 +269,10 @@ async function handle(state: State, action: Action) {
         } return false
     }
 
-    // Primitive check to ensure a given target matches the Ethereum address specification
-    function isValidEthAdress(target: string): boolean {
-        return target.slice(0, 2) == "0x" && target.length == 42
-    }
-
-    // Checks if a passed target is a valid address
-    async function isValidTarget(target: string): Promise<boolean>{
+    // Checks if a passed target is a valid  Arweave or Ethereum address
+    function isValidTarget(target: string): boolean{
         /* @ts-ignore */ 
-        return Object.keys(state.connections).includes(target) || await SmartWeave.arweave.wallets.getLastTransactionID(target) || isValidEthAdress(target)
+        return RegExp(/[a-z0-9_-]{43}/i).test(target) || RegExp(/^0x[a-fA-F0-9]{40}$/).test(target)
     }
 
     // Check if the passed action is a valid input
@@ -292,7 +287,7 @@ async function handle(state: State, action: Action) {
             const alias = typeof action.input.alias == "string" ? action.input.alias : null
             /* @ts-ignore */
             // Ensure the target is a valid address
-            if (!(await isValidTarget(target))){
+            if (!(isValidTarget(target))){
                 /* @ts-ignore */ 
                 throw new ContractError(`Address ${target} is not a valid address`)
             } // If the target has already been connected to in this namespace and this connection type, but the alias is different, overwrite the connection
