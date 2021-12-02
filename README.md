@@ -62,7 +62,7 @@ input = {
 Output:
 
 ```typescript
-{
+output = {
     [origin: string]: [{
         connectionType: string,
         target: string,
@@ -93,7 +93,7 @@ input = {
 Output:
 
 ```typescript
-{
+output = {
     [followed: string]: [{
         connectionType: string,
         origin: string,
