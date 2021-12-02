@@ -350,22 +350,22 @@ async function handle(state: State, action: Action) {
                         delete state.connections[caller][target][namespace][connectionType]
                         if (state.connections[caller][target][namespace] == {}){
                             delete state.connections[caller][target][namespace]
-                            }
+                        }
                     } else {
                         delete state.connections[caller][target][namespace]
                     } if (state.connections[caller][target] == {}){
                         delete state.connections[caller][target]        
-                        }
+                    }
                 } else {
                     delete state.connections[caller][target]
                 } if (state.connections[caller] == {}){
                     delete state.connections[caller]
-                    }
+                }
             } else {
                 delete state.connections[caller]
             }
             return { state }
-        }    
+        }
         // If it's a valid followings call, get all followings
         if (isValidFollowings(action)){
             const target = action.input.target
@@ -379,8 +379,8 @@ async function handle(state: State, action: Action) {
                             connectionType,
                             target: following,
                             namespace,
-                            createdAt: state.connections[origin][following][namespace][connectionType]["createdAt"],
-                            alias: state.connections[origin][following][namespace][connectionType]["alias"]
+                            createdAt: state.connections[origin][following][namespace][connectionType].createdAt,
+                            alias: state.connections[origin][following][namespace][connectionType].alias
                             }
                         })
                     })
@@ -404,8 +404,8 @@ async function handle(state: State, action: Action) {
                                     connectionType,
                                     origin: origin,
                                     namespace,
-                                    createdAt: state.connections[origin][following][namespace][connectionType]["createdAt"],
-                                    alias: state.connections[origin][following][namespace][connectionType]["alias"]
+                                    createdAt: state.connections[origin][following][namespace][connectionType].createdAt,
+                                    alias: state.connections[origin][following][namespace][connectionType].alias
                                     }
                                 })
                             })
