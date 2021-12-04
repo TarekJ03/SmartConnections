@@ -2,12 +2,18 @@
 
 This project is an application for [this Gitcoin bounty](https://gitcoin.co/issue/cyberconnecthq/cyberconnect-arweave/1/100027167). The connections are stored on-chain using a [`Smartweave`](https://github.com/ArweaveTeam/SmartWeave) smart contract.
 
+## Philosophy and approach
+
+This smart contract is very user-centered in the way the methods work. Connections can only be altered by their owners, the address that called the contract for this specific interaction. Even though there is a list of addresses with privileged write access in `owners`, the only special access those have is to extend the already present namespaces and connection types. This is there to control the addition of new namespaces and connection types. As a protection mechanism, the `owners` cannot be changed as to not introduce multiple levels of privilege. All of this means that there's unrestricted read access to this smart contract's data, however, extremely limited write access which guarantees the safety and permanence (until requested removal) of the stored data. Due to the underlying technology, each address pays for its own connections. This price is very low (currently, and also [expected to be so in the future](https://www.arweave.org/technology#endowment)), however, it isn't zero, which hopefully makes users more mindful of their digital footprint.
+
 ## Why `Smartweave`
 
-`Smartweave` allows storing the data on the Arweave blockchain. The way it works makes extending the contracts very easy for two reasons:
+`Smartweave` allows storing the data on the Arweave network. The way it works makes extending the contracts very easy for two reasons:
 
-1) The contract's source is stored on-chain as well, which means that any `Smartweave` contract is inherently open-source, even if it's development isn't (unlike this project)
+1) The contract's source is stored on-chain as well, which means that any `Smartweave` contract is inherently open-source, even if its development isn't (unlike this project)
 2) Any contract that's deployed on the chain already can also be called as the source for a new contract with a new initial state
+   - This mechanic also means that in the unlikely event of a breaking bug the contract's source can be adapted, re-deployed and continue working with the old contract's state
+
 
 You can find more information on the way `Smartweave` evaluates contracts and how you can interact with them on the project's [github page](https://github.com/ArweaveTeam/SmartWeave) or in these blog entries: [[1](https://cedriking.medium.com/lets-buidl-smartweave-contracts-6353d22c4561)] [[2](https://cedriking.medium.com/lets-buidl-smartweave-contracts-2-16c904a8692d)]
 
@@ -42,7 +48,7 @@ type State = {
     }
 }
 ```
-`owners`: An array of addresses with access to configuration methods **(unchangable)**
+`owners`: An array of addresses with access to configuration methods **(unchangable once deployed)**
 
 `namespaces`: An object containing the namespaces and their respective connection types
 
@@ -118,7 +124,7 @@ output = {
 
 #### `follow`
 
-This method allows the calling address to follow a target address on a specific namespace with a specific connection type.
+This method allows the calling address to follow a target address in a specific namespace with a specific connection type.
 
 Input:
 
@@ -165,7 +171,7 @@ input = {
 
 #### `addNamespaces`
 
-This method allows addresses that are members of the `owners` group of addresses to add namespaces to this contract's state.
+This method allows addresses that are members of the `owners` group to add namespaces to this contract's state.
 
 Input:
 
