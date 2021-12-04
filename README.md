@@ -2,12 +2,20 @@
 
 This project is an application for [this Gitcoin bounty](https://gitcoin.co/issue/cyberconnecthq/cyberconnect-arweave/1/100027167). The connections are stored on-chain using a [`Smartweave`](https://github.com/ArweaveTeam/SmartWeave) smart contract.
 
+## Why `Smartweave`
+
+`Smartweave` allows storing the data on the Arweave blockchain. The way it works makes extending the contracts very easy for two reasons:
+
+1) The contract's source is stored on-chain as well, which means that any `Smartweave` contract is inherently open-source, even if it's development isn't (unlike this project)
+2) Any contract that's deployed on the chain already can also be called as the source for a new contract with a new initial state
+
+You can find more information on the way `Smartweave` evaluates contracts and how you can interact with them on the project's [github page](https://github.com/ArweaveTeam/SmartWeave) or in these blog entries: [[1](https://cedriking.medium.com/lets-buidl-smartweave-contracts-6353d22c4561)] [[2](https://cedriking.medium.com/lets-buidl-smartweave-contracts-2-16c904a8692d)]
+
 ## Usage
 
-`Smartweave` provides different methods of interaction with the contract's data:
+Simplified explanations of the different methods of interaction with the contract's data `Smartweave` provides:
 
-1) [`readContract`](https://github.com/ArweaveTeam/SmartWeave/blob/master/SDK.md#readcontract)
-    basically just returns the contract's state at the current (or passed) height. This is useful, because unlike the other methods, this one doesn't require passing a wallet since it simply reads out the current state without any further computation.
+1) [`readContract`](https://github.com/ArweaveTeam/SmartWeave/blob/master/SDK.md#readcontract) basically just returns the contract's state at the current (or passed) height. This is useful, because unlike the other methods, this one doesn't require passing a wallet since it simply reads out the current state without any further computation.
 2) [`interactRead`](https://github.com/ArweaveTeam/SmartWeave/blob/master/SDK.md#interactread) also reads the contract, but this method requires passing a wallet and input, since it computes the output based on these parameters. This is very useful however, if we don't want the contract's state in the format it is saved in on the chain, which will be further elaborated on later.
 3) [`interactWrite`](https://github.com/ArweaveTeam/SmartWeave/blob/master/SDK.md#interactwrite) is the most interesting one, if you will, since this method allows writing the (connection) data to be written to the contract's state. This is also the only method of the three that requires a private wallet, since this is the only one that actually costs Ar to use.
 
@@ -106,6 +114,8 @@ output = {
 ```
 ### `interactWrite`
 
+**Important notice: Writing data to the Arweave chain like these methods do costs Ar. The price is calculated from the input data's size and can be obtained from https://arweave.net/price/{input_data_size}**
+
 #### `follow`
 
 This method allows the calling address to follow a target address on a specific namespace with a specific connection type.
@@ -172,7 +182,7 @@ input = {
 
 #### `addConnectionTypes`
 
-This method allows addresses that are members of the `owners` group of addresses to add connection types to an already present namespace.
+This method allows addresses that are members of the `owners` group to add connection types to an already present namespace.
 
 Input:
 
