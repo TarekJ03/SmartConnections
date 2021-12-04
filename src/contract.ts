@@ -5,7 +5,7 @@ type State = {
         [namespace: string]: string[]
     },
     connections: {
-        [address: string]: {
+        [origin: string]: {
             [target: string]: {
                 [namespace: string]: {
                     [connectionType: string]: {
