@@ -138,7 +138,7 @@ input = {
 }
 ```
 
-`target`: The address to connected to
+`target`: The address to connect to
 
 `namespace`: The namespace the connection is in
 
