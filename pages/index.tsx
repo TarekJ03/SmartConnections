@@ -10,7 +10,6 @@ const Home: NextPage = () => {
       <Head>
         <title>SmartConnections</title>
         <meta name="SmartConnections dApp" content="Arweave social connections dApp" />
-        <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <main className={styles.main}>
