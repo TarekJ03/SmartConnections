@@ -2,9 +2,9 @@ import { ChangeEvent } from "react"
 import { useRouter } from "next/router"
 import Cookies from "typescript-cookie/dist/src/compat"
 import { PermissionType } from "arconnect"
-import { loginContext } from "./loginProvider"
+import { loginContext } from "../providers/loginProvider"
 import styles from "../styles/Home.module.css"
-import { arweaveContext } from "./arweaveProvider"
+import { arweaveContext } from "../providers/arweaveProvider"
 import { JWKInterface, JWKPublicInterface } from "arweave/node/lib/wallet"
 
 

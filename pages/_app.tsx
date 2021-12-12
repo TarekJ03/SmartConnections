@@ -3,8 +3,8 @@ import type { AppProps } from 'next/app'
 import React, { useState } from 'react'
 import Arweave from "arweave"
 import Cookies from 'typescript-cookie/dist/src/compat'
-import {loginContext, loginState} from "./loginProvider"
-import { arweaveContext } from './arweaveProvider'
+import {loginContext, loginState} from "../providers/loginProvider"
+import { arweaveContext } from '../providers/arweaveProvider'
 import "../styles/Home.module.css"
 
 const initialValue: loginState = {

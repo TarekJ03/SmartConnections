@@ -1,5 +1,5 @@
-import { arweaveContext } from "./arweaveProvider";
-import { loginContext } from "./loginProvider";
+import { arweaveContext } from "../providers/arweaveProvider";
+import { loginContext } from "../providers/loginProvider";
 
 export default function Browse(){
     return <loginContext.Consumer>{
