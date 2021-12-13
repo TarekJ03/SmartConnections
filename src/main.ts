@@ -23,7 +23,7 @@ async function contract() {
   fs.writeFileSync("contract.txt", await createContract(arweave, wallet, contractSource, JSON.stringify(initialState)))
 }
   
-async function mint(address:string, amount: Number) {
+async function mint(address:string, amount: number) {
   // Minting a given amount of Winston to the given address
   await fetch(`http://localhost:1984/mint/${address}/${amount}`)
 }

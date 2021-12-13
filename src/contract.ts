@@ -90,7 +90,7 @@ type FollowingConnection = {
     connectionType: string,
     target: string,
     namespace: string,
-    createdAt: Number,
+    createdAt: number,
     alias: string | null
 }
 
@@ -99,7 +99,7 @@ type FollowerConnection = {
     connectionType: string,
     origin: string,
     namespace: string,
-    createdAt: Number,
+    createdAt: number,
     alias: string | null
 }
 
