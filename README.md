@@ -1,6 +1,6 @@
 # SmartConnections
 
-This project is an application for [this Gitcoin bounty](https://gitcoin.co/issue/cyberconnecthq/cyberconnect-arweave/1/100027167). The connections are stored on-chain using a [`Smartweave`](https://github.com/ArweaveTeam/SmartWeave) smart contract.
+This project is an application for [this Gitcoin bounty](https://gitcoin.co/issue/cyberconnecthq/cyberconnect-arweave/1/100027167). The connections are stored on-chain using a [`Smartweave`](https://github.com/ArweaveTeam/SmartWeave) smart contract. The contract is live on the arweave with the ID `8zsrYKY_ZD9MJZcYjjpq4rajA2WGPAWrrq6IdfL4GnM`.
 
 ## Philosophy and approach
 
