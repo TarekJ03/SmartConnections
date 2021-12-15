@@ -18,15 +18,12 @@ const Home: NextPage = () => {
         </h1>
 
         <p className={styles.description}>
-          <Link href="browse">Browse all connections</Link> or login via one of the methods below
+          <span style={{"color": "#0070f3"}}><Link href="browse.html">Browse all connections</Link></span> or login via one of the methods below
         </p>
-
         <Login />
       </main> 
     </div>
   )
-  
-
 }
 
 

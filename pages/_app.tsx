@@ -1,17 +1,20 @@
 import '../styles/globals.css'
 import type { AppProps } from 'next/app'
-import React, { useState } from 'react'
 import Arweave from "arweave"
+import React, { useState, createContext } from 'react'
 import Cookies from 'typescript-cookie/dist/src/compat'
-import {loginContext, loginState} from "../providers/loginProvider"
-import { arweaveContext } from '../providers/arweaveProvider'
+import { loginState, loginContextState } from '../types/types'
 import "../styles/Home.module.css"
+
+export const contractID = "8zsrYKY_ZD9MJZcYjjpq4rajA2WGPAWrrq6IdfL4GnM"
 
 const initialValue: loginState = {
   isLoggedIn: false,
   address: undefined,
   jwk: undefined,
 }
+
+let loginContext: React.Context<loginContextState>
 
 export default function MyApp({ Component, pageProps }: AppProps) {
   let state: loginState
@@ -21,11 +24,16 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   } catch (error) {
     state = initialValue
   }
-  console.log(state)
   const [loginState, setLoginState] = useState(state)
-  return <arweaveContext.Provider value = {{arweave: Arweave.init({})}}>
-      <loginContext.Provider value = {{loginState: loginState, setLoginState: setLoginState}}>
+  const loginContextState: loginContextState = {
+    loginState,
+    setLoginState
+  }
+  loginContext = createContext<loginContextState>(loginContextState)
+  return <loginContext.Provider value = {{loginState: loginState, setLoginState: setLoginState}}>
         <Component {...pageProps} />
-      </loginContext.Provider>
-    </arweaveContext.Provider>
+  </loginContext.Provider>
 }
+
+export {loginContext}
+export const arweave = Arweave.init({})
