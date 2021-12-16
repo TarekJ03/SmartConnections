@@ -31,12 +31,12 @@ To initiate a new instance of this smart contract, follow these steps:
 
 	```JSON
 	{
-	  owners: ["owner1", "owner2"],
-	  namespaces: {
+	  "owners": ["owner1", "owner2"],
+	  "namespaces": {
 	    "namespace1": ["method1", "method2"],
 	    "namespace2": ["method1", "method2"]
 	  },
-	  connections: {}
+	  "connections": {}
 	}
 	```
 
