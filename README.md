@@ -1,6 +1,6 @@
 # SmartConnections
 
-This project is an application for [this Gitcoin bounty](https://gitcoin.co/issue/cyberconnecthq/cyberconnect-arweave/1/100027167). The connections are stored on-chain using a [`Smartweave`](https://github.com/ArweaveTeam/SmartWeave) smart contract. The contract is live on the arweave with the ID `8zsrYKY_ZD9MJZcYjjpq4rajA2WGPAWrrq6IdfL4GnM`. A basic frontend that reads out the connections and sorts them by most recent can be found [here](https://6girr2rsd7zpm4rhtgvu65j37dvmnathequeardatecjlznnnu6q.arweave.net/8ZEY6jIf8vZyJ5mrT3U7-OrGgmckKEBEYJkEleWtbT0/). More info on that app on [this branch](https://github.com/TarekJ03/SmartConnections/tree/web).
+This project is an application for [this Gitcoin bounty](https://gitcoin.co/issue/cyberconnecthq/cyberconnect-arweave/1/100027167). The connections are stored on-chain using a [`Smartweave`](https://github.com/ArweaveTeam/SmartWeave) smart contract. The contract is live on the arweave with the ID `8zsrYKY_ZD9MJZcYjjpq4rajA2WGPAWrrq6IdfL4GnM`, the source has the TxID `3yLz25dBkgp-y1O2F6dCpUT-U5ctSw4oj29rFPIzxLI`. A basic frontend that reads out the connections and sorts them by most recent can be found [here](https://6girr2rsd7zpm4rhtgvu65j37dvmnathequeardatecjlznnnu6q.arweave.net/8ZEY6jIf8vZyJ5mrT3U7-OrGgmckKEBEYJkEleWtbT0/). More info on that app on [this branch](https://github.com/TarekJ03/SmartConnections/tree/web).
 
 ## Philosophy and approach
 
@@ -16,6 +16,35 @@ This smart contract is very user-centered in the way the methods work. Connectio
 
 
 You can find more information on the way `Smartweave` evaluates contracts and how you can interact with them on the project's [github page](https://github.com/ArweaveTeam/SmartWeave) or in these blog entries: [[1](https://cedriking.medium.com/lets-buidl-smartweave-contracts-6353d22c4561)] [[2](https://cedriking.medium.com/lets-buidl-smartweave-contracts-2-16c904a8692d)]
+
+## Setup
+
+To initiate a new instance of this smart contract, follow these steps:
+
+1. Install `Smartweave` (if not already installed):
+
+	```bash
+	npm install -g smartweave
+	```
+
+2. Write an initial `state.json`:
+
+	```JSON
+	{
+	  owners: [/* owner addresses */],
+	  namespaces: {
+	    /* namespace 1 */: [/* connection methods */],
+	    /* namespace 2 */: [/* connection methods */]
+	  },
+	  connections: {}
+	}
+	```
+
+3. Create a new contract:
+
+     ```bash
+     smartweave 3yLz25dBkgp-y1O2F6dCpUT-U5ctSw4oj29rFPIzxLI path/to/state.json --key-file path/to/keyfile
+	```
 
 ## Usage
 
