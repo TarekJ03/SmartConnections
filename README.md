@@ -1,0 +1,3 @@
+# SmartConnections - webapp
+
+This Next.js webapp is a demo for what can be accomplished together with the smart contract. The version that's [live on the arweave](https://6girr2rsd7zpm4rhtgvu65j37dvmnathequeardatecjlznnnu6q.arweave.net/8ZEY6jIf8vZyJ5mrT3U7-OrGgmckKEBEYJkEleWtbT0/) has been slimmed down to one page due to limitations with the permaweb and links between pages. It only displays the current connections without any means of interaction. This project could easily be extended to include all the functionality (e.g. follow, unfollow, add namespaces), but it's only meant to be a demonstration, as the key component of this submission is the smart contract.
